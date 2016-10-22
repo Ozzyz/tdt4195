@@ -29,7 +29,8 @@ void runProgram(GLFWwindow* window)
 
 	// Setup shader
 	Gloom::Shader shader;
-	shader.makeBasicShader("../gloom/shaders/mirrored.vert", "../gloom/shaders/red.frag");
+  // TODO: Make these relative paths
+	shader.makeBasicShader("/home/shomec/a/aasmunhb/Documents/Visuell/gloom/gloom/shaders/rgba.vert", "/home/shomec/a/aasmunhb/Documents/Visuell/gloom/gloom/shaders/rgba.frag");
 	// Boolean for more simple activation or deactivaton of shader when testing
 	bool shader_is_activated = true;
 
@@ -141,32 +142,17 @@ GLuint task1b() {
 
 	// sets the global indicesSize for use when drawing
 	indicesSize = sizeof(indices);
-
+  float RGBAarray[] = {
+    1, 1, 0,
+    0, 1, 0,
+    0.5, 0.5, 0.5,
+    0, 0, 1,
+    1, 1, 1
+  };
 	GLuint VAO;
 
 	// Generates VAO from the vertices and indices
-	VAO = setupVAO(vertices, sizeof(vertices), indices, sizeof(indices));
-
-	return VAO;
-}
-
-
-GLuint task1d() {
-	float vertices[] = {
-		0.6, -0.8, -1.2,
-		0.0, 0.4, 0.0,
-		-0.8, -0.2, 1.2
-	};
-
-	int indices[] = {
-		0, 1, 2
-	};
-
-	indicesSize = sizeof(indices);
-
-	GLuint VAO;
-
-	VAO = setupVAO(vertices, sizeof(vertices), indices, sizeof(indices));
+	VAO = setupVAO(vertices, sizeof(vertices), indices, sizeof(indices), RGBAarray);
 
 	return VAO;
 }
