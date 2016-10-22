@@ -30,9 +30,13 @@ void runProgram(GLFWwindow* window)
 	// Setup shader
 	Gloom::Shader shader;
   // TODO: Make these relative paths
-	shader.makeBasicShader("/home/shomec/a/aasmunhb/Documents/Visuell/gloom/gloom/shaders/rgba.vert", "/home/shomec/a/aasmunhb/Documents/Visuell/gloom/gloom/shaders/rgba.frag");
+	shader.makeBasicShader("/home/shomec/a/aasmunhb/Documents/Visuell/gloom/gloom/shaders/rgba4x4.vert", "/home/shomec/a/aasmunhb/Documents/Visuell/gloom/gloom/shaders/rgba.frag");
 	// Boolean for more simple activation or deactivaton of shader when testing
 	bool shader_is_activated = true;
+
+  // get uniform value
+  GLfloat value = -0.5;
+  GLfloat increment = 0.01;
 
   // Rendering Loop
   while (!glfwWindowShouldClose(window))
@@ -44,7 +48,11 @@ void runProgram(GLFWwindow* window)
 	if (shader_is_activated){
 		shader.activate();
 	}
-
+  value += increment;
+  glUniform1f(2, value);
+  if(value > 0.5 || value < -0.5){
+    increment *= -1;
+  }
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, (void*)0);
 
