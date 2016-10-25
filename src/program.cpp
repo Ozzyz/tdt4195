@@ -2,7 +2,8 @@
 #include "program.hpp"
 #include "gloom/gloom.hpp"
 #include "gloom/shader.hpp"
-
+#include "glm/glm.hpp"
+#include "glm/gtc/type_ptr.hpp"
 int indicesSize;
 GLuint setupVAO(float*, int, int*, int);
 GLuint task1b();
@@ -34,9 +35,8 @@ void runProgram(GLFWwindow* window)
 	// Boolean for more simple activation or deactivaton of shader when testing
 	bool shader_is_activated = true;
 
-  // get uniform value
-  GLfloat value = -0.5;
-  GLfloat increment = 0.01;
+  // 4x4 matrix to pass to shader
+  glm::mat4x4 m(1.0);
 
   // Rendering Loop
   while (!glfwWindowShouldClose(window))
@@ -48,12 +48,9 @@ void runProgram(GLFWwindow* window)
 	if (shader_is_activated){
 		shader.activate();
 	}
-  value += increment;
-  glUniform1f(2, value);
-  if(value > 0.5 || value < -0.5){
-    increment *= -1;
-  }
-	glBindVertexArray(VAO);
+  // Generate data pointer to values
+  glUniformMatrix4fv(2, 1,GL_FALSE, glm::value_ptr(m));
+  glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, (void*)0);
 
 	if (shader_is_activated){shader.deactivate();}
