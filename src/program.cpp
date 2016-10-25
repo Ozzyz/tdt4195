@@ -28,7 +28,7 @@ int indicesSize;
 glm::vec3 cameraPos = glm::vec3(0, 0, 0);
 glm::vec3 cameraLookingAt = glm::vec3(1, 1, 1);
 // Represents pitch and yaw (x and y rotation)
-glm::vec2 orientation(0, 0);
+glm::vec2 orientation(0, 0.0);
 
 
 void runProgram(GLFWwindow* window)
@@ -58,11 +58,12 @@ void runProgram(GLFWwindow* window)
   // Rendering Loop
   while (!glfwWindowShouldClose(window))
   {
-    glm::mat4x4 translate = glm::translate(cameraPos);
-    glm::mat4x4 scale = glm::scale(cameraLookingAt);
-    glm::mat4x4 transformationMatrix = translate*scale;
+
   	// Clear colour and depth buffers
-  	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    // Get transformationmatrix based of camera data
+    glm::mat4x4 transformationMatrix = lookAt(cameraLookingAt, cameraPos);
 
   	if (shader_is_activated){shader.activate();}
     // Generate data pointer to values
@@ -105,26 +106,30 @@ void check_pressed_keys(){
     cameraPos.y += incrementValue;
   }
   if(keys_pressed[GLFW_KEY_A]){
-    cameraPos.x -= incrementValue;
+    cameraPos.x += incrementValue;
   }
   if(keys_pressed[GLFW_KEY_S]){
     cameraPos.y -= incrementValue;
   }
   if(keys_pressed[GLFW_KEY_D]){
-    cameraPos.x += incrementValue;
+    cameraPos.x -= incrementValue;
   }
   // Arrow keys_pressed control rotation (L&R -> x-axis, U/D -> y-axis)
   if(keys_pressed[GLFW_KEY_LEFT]){
+    orientation.y += incrementValue;
     cameraLookingAt.x += incrementValue;
   }
   if(keys_pressed[GLFW_KEY_RIGHT]){
+    orientation.y -= incrementValue;
     cameraLookingAt.x -= incrementValue;
   }
   if(keys_pressed[GLFW_KEY_UP]){
+    orientation.x -= incrementValue;
     cameraLookingAt.y += incrementValue;
   }
   if(keys_pressed[GLFW_KEY_DOWN]){
     cameraLookingAt.y -= incrementValue;
+    orientation.x += incrementValue;
   }
 }
 
@@ -138,10 +143,14 @@ glm::mat4x4 lookAt(glm::vec3 cameraLookingAt, glm::vec3 cameraPos){
   // Up relative to the camera
   glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
   // Translate all objects in the worldspace relative to camera
-  //glm::mat4 viewMatrix = glm::normalize(glm::translate(-cameraPos));
+  glm::mat4 viewMatrix = glm::translate(-cameraPos);
   // Rotate camera so that it is pointing down the -z axis
-  //mat4x4 rotationMatrix = glm::rotate()
+  float xrot = orientation[0];
+  float yrot = orientation[1];
+  glm::mat4 XrotationMatrix = glm::rotate(xrot, glm::vec3(1.0, 0.0, 0.0));
+  glm::mat4 YrotationMatrix = glm::rotate(yrot, glm::vec3(0.0, 1.0, 0.0));
 
+  return YrotationMatrix*XrotationMatrix*viewMatrix;
 }
 
 GLuint setupVAO(float* vertices, int verticesSize, int* indices, int indicesSize, float* RGBAvalues) {
