@@ -4,10 +4,17 @@
 #include "gloom/shader.hpp"
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
+#include <glm/mat4x4.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/vec3.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 int indicesSize;
 GLuint setupVAO(float*, int, int*, int);
 GLuint task1b();
 GLuint task1d();
+
+vec3 cameraPos = vec3(0, 0, 2);
+vec3 cameraLookingAt = vec3(0, 0, 0);
 
 void runProgram(GLFWwindow* window)
 {
@@ -66,13 +73,85 @@ void runProgram(GLFWwindow* window)
 void keyboardCallback(GLFWwindow* window, int key, int scancode,
                       int action, int mods)
 {
+    // Sets how much the camera moves during each frame if key pressed
+    float incrementValue = 0.01
     // Use escape key for terminating the GLFW window
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
+    // WASD will control up/down/left/right (y and x axis)
+    if(action == GLFW_PRESS){
+      if(key == GLFW_KEY_W){
+        incrementCameraY(incrementValue);
+      }
+      else if(key == GLF_KEY_A){
+        incrementCameraY(incrementValue);
+      }
+      else if(key == GLFW_KEY_S){
+        incrementCameraY(-incrementValue);
+      }
+      else if(key == GLF_KEY_D){
+        incrementCameraX(-incrementValue);
+      }
+      // Arrow keys control rotation (L&R -> x-axis, U/D -> y-axis)
+      else if(key == GLFW_KEY_LEFT){
+        incrementCameraLookingAtX(incrementValue);
+      }
+      else if(key == GLF_KEY_RIGHT){
+        incrementCameraLookingAtX(-incrementValue);
+      }
+      else if(key == GLFW_KEY_UP){
+        incrementCameraLookingAtY(incrementValue);
+      }
+      else if(key == GLF_KEY_DOWN){
+        incrementCameraLookingAtY(-incrementValue);
+      }
+  }
 }
 
+void incrementCameraX(float value){
+    cameraPos[0] += value;
+}
+
+void incrementCameraY(float value){
+  cameraPos[1] += value;
+}
+
+void incrementCameraZ(float value){
+  cameraPos[2] += value;
+}
+void incrementCameraLookingAtX(float value){
+  cameraLookingAt[0] += value;
+}
+void incrementCameraLookingAtY(float value){
+  cameraLookingAt[1] += value;
+}
+
+
+mat4x4 lookAt(right, up, direction, cameraPos){
+  vec3 cameraDirection = cameraPos-cameraLookingAt;
+  vec3 up = vec3(0,1,0);
+  // Right relative to the camera
+  vec3 cameraRight = glm::cross(up, cameraDirection);
+  // Up relative to the camera
+  vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
+
+  // Translate all objects in the worldspace relative to camera
+  mat4x4 viewMatrix = glm::translate(-cameraPos);
+  // Rotate camera so that it is pointing down the -z axis
+  //mat4x4 rotationMatrix = glm::rotate()
+
+
+  mat4 Projection = glm::perspective(glm::radians(45.0f), // FOV
+                                    (float) width / (float)height, //Aspect ratio
+                                     0.1f, // Display range start
+                                    100.0f // Display range end
+                                    );
+  // Perspective transform, so that objects become relative in size according to z value
+
+
+}
 
 GLuint setupVAO(float* vertices, int verticesSize, int* indices, int indicesSize, float* RGBAvalues) {
 	// Generates a new Vertex Array Object
