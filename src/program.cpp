@@ -19,12 +19,17 @@ void incrementCameraLookingAtX(float);
 void incrementCameraLookingAtY(float);
 void incrementCameraY(float);
 void incrementCameraX(float);
+void check_pressed_keys();
 glm::mat4x4 lookAt(glm::vec3, glm::vec3);
 
-
+// Array to keep track over what keys are pressed
+bool keys_pressed[1024];
 int indicesSize;
 glm::vec3 cameraPos = glm::vec3(0, 0, 0);
-glm::vec3 cameraLookingAt = glm::vec3(0, 0, 0);
+glm::vec3 cameraLookingAt = glm::vec3(1, 1, 1);
+// Represents pitch and yaw (x and y rotation)
+glm::vec2 orientation(0, 0);
+
 
 void runProgram(GLFWwindow* window)
 {
@@ -53,9 +58,9 @@ void runProgram(GLFWwindow* window)
   // Rendering Loop
   while (!glfwWindowShouldClose(window))
   {
-    glm::mat4x4 transformationMatrix(1.0);
-    glm::mat4x4 m2 = glm::translate(cameraPos);
-    transformationMatrix *= m2;
+    glm::mat4x4 translate = glm::translate(cameraPos);
+    glm::mat4x4 scale = glm::scale(cameraLookingAt);
+    glm::mat4x4 transformationMatrix = translate*scale;
   	// Clear colour and depth buffers
   	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -68,70 +73,61 @@ void runProgram(GLFWwindow* window)
   	if (shader_is_activated){shader.deactivate();}
     // Handle other events
     glfwPollEvents();
+    check_pressed_keys();
     // Flip buffers
     glfwSwapBuffers(window);
   }
 	if (shader_is_activated){shader.destroy();}
 }
 
-
 void keyboardCallback(GLFWwindow* window, int key, int scancode,
                       int action, int mods){
-    // Sets how much the camera moves during each frame if key pressed
-    float incrementValue = 0.01;
     // Use escape key for terminating the GLFW window
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
-    // WASD will control up/down/left/right (y and x axis)
+    // Set key to false if released, else true
+    keys_pressed[key] = (action != GLFW_RELEASE);
+}
 
-    if(action == GLFW_PRESS){
-      if(key == GLFW_KEY_W){
-        incrementCameraY(incrementValue);
-      }
-      else if(key == GLFW_KEY_A){
-        incrementCameraX(-incrementValue);
-      }
-      else if(key == GLFW_KEY_S){
-        incrementCameraY(-incrementValue);
-      }
-      else if(key == GLFW_KEY_D){
-        incrementCameraX(incrementValue);
-      }
-      // Arrow keys control rotation (L&R -> x-axis, U/D -> y-axis)
-      else if(key == GLFW_KEY_LEFT){
-        incrementCameraLookingAtX(incrementValue);
-      }
-      else if(key == GLFW_KEY_RIGHT){
-        incrementCameraLookingAtX(-incrementValue);
-      }
-      else if(key == GLFW_KEY_UP){
-        incrementCameraLookingAtY(incrementValue);
-      }
-      else if(key == GLFW_KEY_DOWN){
-        incrementCameraLookingAtY(-incrementValue);
-      }
+void check_pressed_keys(){
+  // Check what keys_pressed are activated, and react accordingly
+  // Note: This means that multiple keys_pressed kan be activated at once.
+
+  // Sets how much the camera moves during each frame if key pressed
+  // If negative, it will behave as a camera (inverted controls)
+  // If positive, it will behave as if you are steering the triangle
+  float incrementValue = -0.01;
+
+  // WASD will control up/down/left/right (y and x axis)
+  if(keys_pressed[GLFW_KEY_W]){
+    cameraPos.y += incrementValue;
+  }
+  if(keys_pressed[GLFW_KEY_A]){
+    cameraPos.x -= incrementValue;
+  }
+  if(keys_pressed[GLFW_KEY_S]){
+    cameraPos.y -= incrementValue;
+  }
+  if(keys_pressed[GLFW_KEY_D]){
+    cameraPos.x += incrementValue;
+  }
+  // Arrow keys_pressed control rotation (L&R -> x-axis, U/D -> y-axis)
+  if(keys_pressed[GLFW_KEY_LEFT]){
+    cameraLookingAt.x += incrementValue;
+  }
+  if(keys_pressed[GLFW_KEY_RIGHT]){
+    cameraLookingAt.x -= incrementValue;
+  }
+  if(keys_pressed[GLFW_KEY_UP]){
+    cameraLookingAt.y += incrementValue;
+  }
+  if(keys_pressed[GLFW_KEY_DOWN]){
+    cameraLookingAt.y -= incrementValue;
   }
 }
 
-void incrementCameraX(float value){
-    cameraPos[0] += value;
-}
-
-void incrementCameraY(float value){
-  cameraPos[1] += value;
-}
-
-void incrementCameraZ(float value){
-  cameraPos[2] += value;
-}
-void incrementCameraLookingAtX(float value){
-  cameraLookingAt[0] += value;
-}
-void incrementCameraLookingAtY(float value){
-  cameraLookingAt[1] += value;
-}
 
 
 glm::mat4x4 lookAt(glm::vec3 cameraLookingAt, glm::vec3 cameraPos){
@@ -141,20 +137,11 @@ glm::mat4x4 lookAt(glm::vec3 cameraLookingAt, glm::vec3 cameraPos){
   glm::vec3 cameraRight = glm::cross(up, cameraDirection);
   // Up relative to the camera
   glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
-
   // Translate all objects in the worldspace relative to camera
   //glm::mat4 viewMatrix = glm::normalize(glm::translate(-cameraPos));
   // Rotate camera so that it is pointing down the -z axis
   //mat4x4 rotationMatrix = glm::rotate()
 
-
-  glm::mat4 Projection = glm::perspective(glm::radians(45.0f), // FOV
-                                    (float) 800 / (float) 600, //Aspect ratio
-                                     0.1f, // Display range start
-                                    100.0f // Display range end
-                                    );
-  // Perspective transform, so that objects become relative in size according to z value
-  return Projection;
 }
 
 GLuint setupVAO(float* vertices, int verticesSize, int* indices, int indicesSize, float* RGBAvalues) {
