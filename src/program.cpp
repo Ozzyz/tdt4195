@@ -103,13 +103,13 @@ void check_pressed_keys(){
 
   // WASD will control up/down/left/right (y and x axis)
   if(keys_pressed[GLFW_KEY_W]){
-    cameraPos.y += incrementValue;
+    cameraPos.y -= incrementValue;
   }
   if(keys_pressed[GLFW_KEY_A]){
     cameraPos.x += incrementValue;
   }
   if(keys_pressed[GLFW_KEY_S]){
-    cameraPos.y -= incrementValue;
+    cameraPos.y += incrementValue;
   }
   if(keys_pressed[GLFW_KEY_D]){
     cameraPos.x -= incrementValue;
@@ -131,6 +131,14 @@ void check_pressed_keys(){
     cameraLookingAt.y -= incrementValue;
     orientation.x += incrementValue;
   }
+  // Key presses for forward and backwards movement
+  if(keys_pressed[GLFW_KEY_B]){
+    cameraPos.z += incrementValue;
+  }
+  if(keys_pressed[GLFW_KEY_V]){
+    cameraPos.z -= incrementValue;
+  }
+
 }
 
 
@@ -144,13 +152,18 @@ glm::mat4x4 lookAt(glm::vec3 cameraLookingAt, glm::vec3 cameraPos){
   glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
   // Translate all objects in the worldspace relative to camera
   glm::mat4 viewMatrix = glm::translate(-cameraPos);
+  // Scale objects
+  float scaleFactor = cameraPos.z+1;
+  glm::mat4 scaleMatrix = glm::scale(glm::vec3(scaleFactor, scaleFactor, 1.0));
   // Rotate camera so that it is pointing down the -z axis
-  float xrot = orientation[0];
-  float yrot = orientation[1];
+  float xrot = orientation.x;
+  float yrot = orientation.y;
   glm::mat4 XrotationMatrix = glm::rotate(xrot, glm::vec3(1.0, 0.0, 0.0));
   glm::mat4 YrotationMatrix = glm::rotate(yrot, glm::vec3(0.0, 1.0, 0.0));
+  // Generates a really hard-to-read matrix, but a normal, standard 4x4 matrix nonetheless
 
-  return YrotationMatrix*XrotationMatrix*viewMatrix;
+
+  return viewMatrix*YrotationMatrix*XrotationMatrix*scaleMatrix;
 }
 
 GLuint setupVAO(float* vertices, int verticesSize, int* indices, int indicesSize, float* RGBAvalues) {
