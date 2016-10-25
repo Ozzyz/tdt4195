@@ -29,9 +29,14 @@ void runProgram(GLFWwindow* window)
 
 	// Setup shader
 	Gloom::Shader shader;
-	shader.makeBasicShader("../gloom/shaders/mirrored.vert", "../gloom/shaders/red.frag");
+  // TODO: Make these relative paths
+	shader.makeBasicShader("/home/shomec/a/aasmunhb/Documents/Visuell/gloom/gloom/shaders/rgba4x4.vert", "/home/shomec/a/aasmunhb/Documents/Visuell/gloom/gloom/shaders/rgba.frag");
 	// Boolean for more simple activation or deactivaton of shader when testing
 	bool shader_is_activated = true;
+
+  // get uniform value
+  GLfloat value = -0.5;
+  GLfloat increment = 0.01;
 
   // Rendering Loop
   while (!glfwWindowShouldClose(window))
@@ -43,7 +48,11 @@ void runProgram(GLFWwindow* window)
 	if (shader_is_activated){
 		shader.activate();
 	}
-
+  value += increment;
+  glUniform1f(2, value);
+  if(value > 0.5 || value < -0.5){
+    increment *= -1;
+  }
 	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, (void*)0);
 
@@ -141,32 +150,17 @@ GLuint task1b() {
 
 	// sets the global indicesSize for use when drawing
 	indicesSize = sizeof(indices);
-
+  float RGBAarray[] = {
+    1, 1, 0,
+    0, 1, 0,
+    0.5, 0.5, 0.5,
+    0, 0, 1,
+    1, 1, 1
+  };
 	GLuint VAO;
 
 	// Generates VAO from the vertices and indices
-	VAO = setupVAO(vertices, sizeof(vertices), indices, sizeof(indices));
-
-	return VAO;
-}
-
-
-GLuint task1d() {
-	float vertices[] = {
-		0.6, -0.8, -1.2,
-		0.0, 0.4, 0.0,
-		-0.8, -0.2, 1.2
-	};
-
-	int indices[] = {
-		0, 1, 2
-	};
-
-	indicesSize = sizeof(indices);
-
-	GLuint VAO;
-
-	VAO = setupVAO(vertices, sizeof(vertices), indices, sizeof(indices));
+	VAO = setupVAO(vertices, sizeof(vertices), indices, sizeof(indices), RGBAarray);
 
 	return VAO;
 }
