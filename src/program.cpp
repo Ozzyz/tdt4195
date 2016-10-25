@@ -8,31 +8,36 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/vec3.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-int indicesSize;
+#include <iostream>
+/*************************************
+*********FORWARD DECLARATIONS*********
+**************************************/
 GLuint setupVAO(float*, int, int*, int);
 GLuint task1b();
 GLuint task1d();
+void incrementCameraLookingAtX(float);
+void incrementCameraLookingAtY(float);
+void incrementCameraY(float);
+void incrementCameraX(float);
+glm::mat4x4 lookAt(glm::vec3, glm::vec3);
 
-vec3 cameraPos = vec3(0, 0, 2);
-vec3 cameraLookingAt = vec3(0, 0, 0);
+
+int indicesSize;
+glm::vec3 cameraPos = glm::vec3(0, 0, 0);
+glm::vec3 cameraLookingAt = glm::vec3(0, 0, 0);
 
 void runProgram(GLFWwindow* window)
 {
   // Set GLFW callback mechanism(s)
   glfwSetKeyCallback(window, keyboardCallback);
-
   // Enable depth (Z) buffer (accept "closest" fragment)
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
-
   // Configure miscellaneous OpenGL settings
   glEnable(GL_CULL_FACE);
-
   // Set default colour after clearing the colour buffer
   glClearColor(0.3f, 0.3f, 0.4f, 1.0f);
-
 	GLuint VAO;
-
 	VAO = task1b();
 
 	// Setup shader
@@ -43,68 +48,68 @@ void runProgram(GLFWwindow* window)
 	bool shader_is_activated = true;
 
   // 4x4 matrix to pass to shader
-  glm::mat4x4 m(1.0);
+  //glm::mat4x4 m(1.0);
 
   // Rendering Loop
   while (!glfwWindowShouldClose(window))
   {
-	// Clear colour and depth buffers
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glm::mat4x4 transformationMatrix(1.0);
+    glm::mat4x4 m2 = glm::translate(cameraPos);
+    transformationMatrix *= m2;
+  	// Clear colour and depth buffers
+  	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    // Draw your scene here
-	if (shader_is_activated){
-		shader.activate();
-	}
-  // Generate data pointer to values
-  glUniformMatrix4fv(2, 1,GL_FALSE, glm::value_ptr(m));
-  glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, (void*)0);
+  	if (shader_is_activated){shader.activate();}
+    // Generate data pointer to values
+    glUniformMatrix4fv(2, 1,GL_FALSE, glm::value_ptr(transformationMatrix));
+    glBindVertexArray(VAO);
+  	glDrawElements(GL_TRIANGLES, indicesSize, GL_UNSIGNED_INT, (void*)0);
 
-	if (shader_is_activated){shader.deactivate();}
-      // Handle other events
-      glfwPollEvents();
-      // Flip buffers
-      glfwSwapBuffers(window);
+  	if (shader_is_activated){shader.deactivate();}
+    // Handle other events
+    glfwPollEvents();
+    // Flip buffers
+    glfwSwapBuffers(window);
   }
 	if (shader_is_activated){shader.destroy();}
 }
 
 
 void keyboardCallback(GLFWwindow* window, int key, int scancode,
-                      int action, int mods)
-{
+                      int action, int mods){
     // Sets how much the camera moves during each frame if key pressed
-    float incrementValue = 0.01
+    float incrementValue = 0.01;
     // Use escape key for terminating the GLFW window
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
     // WASD will control up/down/left/right (y and x axis)
+
     if(action == GLFW_PRESS){
       if(key == GLFW_KEY_W){
         incrementCameraY(incrementValue);
       }
-      else if(key == GLF_KEY_A){
-        incrementCameraY(incrementValue);
+      else if(key == GLFW_KEY_A){
+        incrementCameraX(-incrementValue);
       }
       else if(key == GLFW_KEY_S){
         incrementCameraY(-incrementValue);
       }
-      else if(key == GLF_KEY_D){
-        incrementCameraX(-incrementValue);
+      else if(key == GLFW_KEY_D){
+        incrementCameraX(incrementValue);
       }
       // Arrow keys control rotation (L&R -> x-axis, U/D -> y-axis)
       else if(key == GLFW_KEY_LEFT){
         incrementCameraLookingAtX(incrementValue);
       }
-      else if(key == GLF_KEY_RIGHT){
+      else if(key == GLFW_KEY_RIGHT){
         incrementCameraLookingAtX(-incrementValue);
       }
       else if(key == GLFW_KEY_UP){
         incrementCameraLookingAtY(incrementValue);
       }
-      else if(key == GLF_KEY_DOWN){
+      else if(key == GLFW_KEY_DOWN){
         incrementCameraLookingAtY(-incrementValue);
       }
   }
@@ -129,28 +134,27 @@ void incrementCameraLookingAtY(float value){
 }
 
 
-mat4x4 lookAt(right, up, direction, cameraPos){
-  vec3 cameraDirection = cameraPos-cameraLookingAt;
-  vec3 up = vec3(0,1,0);
+glm::mat4x4 lookAt(glm::vec3 cameraLookingAt, glm::vec3 cameraPos){
+  glm::vec3 cameraDirection = cameraPos-cameraLookingAt;
+  glm::vec3 up = glm::vec3(0,1,0);
   // Right relative to the camera
-  vec3 cameraRight = glm::cross(up, cameraDirection);
+  glm::vec3 cameraRight = glm::cross(up, cameraDirection);
   // Up relative to the camera
-  vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
+  glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
 
   // Translate all objects in the worldspace relative to camera
-  mat4x4 viewMatrix = glm::translate(-cameraPos);
+  //glm::mat4 viewMatrix = glm::normalize(glm::translate(-cameraPos));
   // Rotate camera so that it is pointing down the -z axis
   //mat4x4 rotationMatrix = glm::rotate()
 
 
-  mat4 Projection = glm::perspective(glm::radians(45.0f), // FOV
-                                    (float) width / (float)height, //Aspect ratio
+  glm::mat4 Projection = glm::perspective(glm::radians(45.0f), // FOV
+                                    (float) 800 / (float) 600, //Aspect ratio
                                      0.1f, // Display range start
                                     100.0f // Display range end
                                     );
   // Perspective transform, so that objects become relative in size according to z value
-
-
+  return Projection;
 }
 
 GLuint setupVAO(float* vertices, int verticesSize, int* indices, int indicesSize, float* RGBAvalues) {
