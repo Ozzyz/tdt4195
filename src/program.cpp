@@ -160,9 +160,6 @@ glm::mat4x4 lookAt(glm::vec3 cameraLookingAt, glm::vec3 cameraPos){
   float yrot = orientation.y;
   glm::mat4 XrotationMatrix = glm::rotate(xrot, glm::vec3(1.0, 0.0, 0.0));
   glm::mat4 YrotationMatrix = glm::rotate(yrot, glm::vec3(0.0, 1.0, 0.0));
-  // Generates a really hard-to-read matrix, but a normal, standard 4x4 matrix nonetheless
-
-
   return viewMatrix*YrotationMatrix*XrotationMatrix*scaleMatrix;
 }
 
