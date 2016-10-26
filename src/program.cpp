@@ -28,7 +28,7 @@ int indicesSize;
 glm::vec3 cameraPos = glm::vec3(0, 0, 0);
 glm::vec3 cameraLookingAt = glm::vec3(1, 1, 1);
 // Represents pitch and yaw (x and y rotation)
-glm::vec2 orientation(0, 0.0);
+glm::vec2 orientation(0.0, 0.0);
 
 
 void runProgram(GLFWwindow* window)
